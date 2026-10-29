@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- 'unsafe-eval' is required: pywebview returns every Python result to the page via eval(). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-eval'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Screaming Llamas</title>
+  <link rel="stylesheet" href="app.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="toolbar">
+    <form id="crawl-form" novalidate>
+      <div class="crawl-row">
+        <label class="visually-hidden" for="url">Website address</label>
+        <input id="url" name="url" type="text" inputmode="url" autocomplete="url" spellcheck="false"
+               placeholder="https://example.com" required>
+        <button id="start" type="submit" class="primary">Start</button>
+        <button id="stop" type="button" disabled>Stop</button>
+        <button id="settings-toggle" type="button" aria-expanded="false" aria-controls="settings">Settings</button>
+        <span class="spacer"></span>
+        <button id="open" type="button">Open crawl…</button>
+      </div>
+      <fieldset id="settings" class="settings" hidden>
+        <legend class="visually-hidden">Crawl settings</legend>
+        <label>Max URLs <span class="hint">0 = no limit</span>
+          <input name="max_urls" type="number" min="0" step="1" value="0"></label>
+        <label>Max depth <span class="hint">-1 = no limit</span>
+          <input name="max_depth" type="number" min="-1" step="1" value="-1"></label>
+        <label>Concurrency <span class="hint">1 to 100</span>
+          <input name="concurrency" type="number" min="1" max="100" step="1" value="5"></label>
+        <label>Requests per second <span class="hint">0 = no limit</span>
+          <input name="rate" type="number" min="0" step="0.1" value="0"></label>
+        <label>Timeout (seconds)
+          <input name="timeout" type="number" min="1" step="1" value="20"></label>
+        <label class="wide">User-Agent <span class="hint">empty = default</span>
+          <input name="user_agent" type="text" spellcheck="false"></label>
+        <label class="check"><input name="ignore_robots" type="checkbox"> Ignore robots.txt</label>
+        <label class="check"><input name="follow_nofollow" type="checkbox"> Follow nofollow links</label>
+        <label class="check"><input name="include_subdomains" type="checkbox"> Treat subdomains as internal</label>
+        <label class="check"><input name="check_external" type="checkbox"> Check external links</label>
+        <label class="wide">Include <span class="hint">one regex per line; only crawl matching URLs</span>
+          <textarea name="include" rows="2" spellcheck="false"></textarea></label>
+        <label class="wide">Exclude <span class="hint">one regex per line; skip matching URLs</span>
+          <textarea name="exclude" rows="2" spellcheck="false"></textarea></label>
+      </fieldset>
+    </form>
+  </header>
+
+  <div class="statusbar">
+    <p id="state" role="status">Loading…</p>
+    <p id="counts" class="muted"></p>
+    <span class="spacer"></span>
+    <span id="folder" class="muted path"></span>
+    <button id="show-folder" type="button" hidden>Show folder</button>
+  </div>
+  <p id="error" class="error" role="alert" hidden></p>
+
+  <main class="workspace">
+    <section class="pane" aria-label="Crawl results">
+      <div class="pane-bar">
+        <div class="tabs" role="tablist" aria-label="Reports" id="report-tabs">
+          <button type="button" role="tab" id="tab-internal" data-tab="internal" aria-selected="true" aria-controls="grid-panel">Internal</button>
+          <button type="button" role="tab" id="tab-external" data-tab="external" aria-selected="false" aria-controls="grid-panel" tabindex="-1">External</button>
+        </div>
+        <label for="filter">Show</label>
+        <select id="filter"></select>
+        <label class="visually-hidden" for="search">Search addresses</label>
+        <input id="search" type="search" placeholder="Search addresses" spellcheck="false">
+        <span class="spacer"></span>
+        <span id="range" class="muted"></span>
+        <button id="prev" type="button" aria-label="Previous page" disabled>‹</button>
+        <button id="next" type="button" aria-label="Next page" disabled>›</button>
+      </div>
+      <div id="grid-panel" class="table-wrap" role="tabpanel" aria-labelledby="tab-internal">
+        <table id="grid" class="data">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+        <p id="grid-empty" class="empty" hidden></p>
+      </div>
+    </section>
+
+    <section class="pane" aria-label="Selected URL">
+      <div class="pane-bar">
+        <div class="tabs" role="tablist" aria-label="URL details" id="detail-tabs">
+          <button type="button" role="tab" data-tab="details" aria-selected="true" aria-controls="detail-panel">Details</button>
+          <button type="button" role="tab" data-tab="inlinks" aria-selected="false" aria-controls="detail-panel" tabindex="-1">Inlinks</button>
+          <button type="button" role="tab" data-tab="outlinks" aria-selected="false" aria-controls="detail-panel" tabindex="-1">Outlinks</button>
+          <button type="button" role="tab" data-tab="headers" aria-selected="false" aria-controls="detail-panel" tabindex="-1">Headers</button>
+        </div>
+        <span id="detail-url" class="path"></span>
+        <span class="spacer"></span>
+        <span id="detail-note" class="muted"></span>
+        <button id="open-url" type="button" disabled>Open in browser</button>
+      </div>
+      <div id="detail-panel" class="table-wrap" role="tabpanel" aria-label="URL details">
+        <table id="detail" class="data">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+        <p id="detail-empty" class="empty">Select a URL above to see its details.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
